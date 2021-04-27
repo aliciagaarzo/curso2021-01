@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <odoo>
+    <data>
         <record id="view_helpdesk_tickets_form" model="ir.ui.view">
             <field name = "name">view.helpdesk.ticket.form</field>
             <field name = "model">helpdesk.ticket</field>
@@ -29,13 +30,14 @@
                         <field name="date_limit"/>
                     </group>
                      <group>
-                        <field name="user_id"/>
+                        <field name="user_id" options="{'no_create': True, 'no_open': True}"/>
                         <field name="assigned"/>
                         <field name="ticket_qty"/>
                         <field name="time" widget="float_time"/>
                     </group>
                 </group>
                 <notebook>
+
                     <page string="Description">
                         <field name="description"/>
                         <group>
@@ -44,11 +46,25 @@
                             name="create_tag"
                             type="object"/>
                         </group>
-                        <field name="tag_ids"/>
+                        <field name="tag_ids" context="{'form_view_ref':'helpdesk_aliciagarzo.view_helpdesk_ticket_tag_simple_form'}"
+                        domain="[('public', '=',  True)]"/>
                     </page>
+
                      <page string = "Actions">
-                        <field name= "action_ids"/>
+                        <field name= "action_ids" context="{'default_date':date}"/>
+                            <tree editable = "bottom">
+                                <field name= "name"/>
+                                <field name= "date"/>
+                            </tree>
+                            <form>
+                                <group name="action">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                </group>
+                            </form>
+                        </field>
                     </page>
+
                     <page string = "Quality">
                         <label for= "action_corrective"/>
                         <field name= "action_corrective"/>
@@ -84,8 +100,6 @@
             </field>
         </record>
 
-
-        
         <record id="view_helpdesk_ticket_pivot" model="ir.ui.view">
             <field name = "name">view.helpdesk_ticket.pivot</field>
             <field name = "model">helpdesk.ticket</field>
@@ -109,7 +123,7 @@
                     <field name="user_id" type="row"/>
                     <field name="time" type="measure" widget="float_time"/>
                 </graph>
-        </field>
+            </field>
         </record>
 
 
@@ -143,6 +157,7 @@
                                  <div class="o_kanban_record_bottom">
                                    <div class="oe_kanban_bottom_right">
                                         <field name="user_id" widget="many2one_avatar_user"/>
+                                    </div>
                                 </div>
                             </div>
                         </t>
@@ -150,6 +165,6 @@
                 </kanban>
             </field>
         </record>
-
+    </data>
 
 </odoo>

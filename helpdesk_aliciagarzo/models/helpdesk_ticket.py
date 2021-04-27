@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 class HelpdeskTicketAction(models.Model):
     _name= 'helpdesk.ticket.action'
@@ -28,9 +29,12 @@ class HelpdeskTicket(models.Model):
     _name= 'helpdesk.ticket'
     _description= 'Ticket'
     
+    def _date_default_today(self):
+        return fields.Date.today()
+    
     name= fields.Char(string='Name', requiered = True)
     description=fields.Text(string='Description', translate=True)
-    date=fields.Date(string='Date')
+    date=fields.Date(string='Date', default=_date_default_today)
 
     tag_ids = fields.Many2many(
         comodel_name = 'helpdesk.ticket.tag',
@@ -161,9 +165,33 @@ class HelpdeskTicket(models.Model):
 
     def create_tag(self):
         self.ensure_one()
+        import pdb; pdb.set_trace()
         # opcion 1
         self.write({
             'tag_ids': [(0,0, {'name':self.tag_name})]
             })
 
         self.tag_name = False
+
+
+@api.constrains('time')
+def _time_positive(self):
+    for ticket in self:
+        if ticket.time and ticket.time < 0:
+            raise ValidationError(("The time can not be negative."))
+
+
+@api.onchange('date')
+def _onchange_date (self):
+    self.date_limit = self.date and self.date + timedelta(days=1)
+
+
+# Pasando por contexto el valor del nombre y la relación con el ticket
+action = self.env.ref('helpdesk_aliciagarzo.action_new_tag').read()[0]
+tag = self.env('helpdesk.ticket.tag').create({
+    'default_name': self.tag_name,
+    'default_tickets_ids': [(6, 0 self.ids)]
+})
+#action['res_id'] = tag.id
+self.tag_name = False
+return action
