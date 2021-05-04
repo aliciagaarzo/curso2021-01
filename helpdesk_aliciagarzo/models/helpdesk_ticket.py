@@ -23,7 +23,7 @@ class HelpdeskTicketTag(models.Model):
     public = fields.Boolean()    
     ticket_ids = fields.Many2many(
         comodel_name='helpdesk.ticket',
-        relation='helpdesk_ticket_tag_rel',
+        relation='helpdesl_ticket_tag_rel',
         column1='tag_id',
         column2='ticket_id',
         string='Tickets')
@@ -36,6 +36,10 @@ class HelpdeskTicketTag(models.Model):
 class HelpdeskTicket(models.Model):
     _name = 'helpdesk.ticket'
     _description = 'Ticket'
+    _inherit = ['mail.thread.cc',
+                'mail.thread.blacklist',
+                'mail.activity.mixin']
+    _primary_email = 'email_from'
 
     def _date_default_today(self):
         return fields.Date.today()
@@ -84,14 +88,20 @@ class HelpdeskTicket(models.Model):
         string='Assigned to')  
     tag_ids = fields.Many2many(
         comodel_name='helpdesk.ticket.tag',
-        relation='helpdesk_ticket_tag_rel',
+        relation='helpdesl_ticket_tag_rel',
         column1='ticket_id',
         column2='tag_id',
         string='Tags')
     action_ids = fields.One2many(
         comodel_name='helpdesk.ticket.action',
         inverse_name='ticket_id',
-        string='Actions')
+        string='Ations')
+    partner_id = fields.Many2one(
+        comodel_name='res.partner',
+        string='Partner')
+    email_from = fields.Char(
+        string='Email from')
+    
 
     @api.depends('action_ids.time')
     def _get_time(self):
@@ -132,6 +142,10 @@ class HelpdeskTicket(models.Model):
     def cancelar(self):
         self.ensure_one()
         self.state = 'cancelado'
+    
+    def cancelar_multi(self):
+        for record in self:
+            record.cancelar()
 
     @api.depends('user_id')
     def _compute_assigned(self):
@@ -183,7 +197,7 @@ class HelpdeskTicket(models.Model):
         # self.tag_name = False
 
         # pasa por contexto el valor del nombre y la relación con el ticket.
-        action = self.env.ref('helpdesk_angelmoya.action_new_tag').read()[0]
+        action = self.env.ref('helpdesk_aliciagarzo.action_new_tag').read()[0]
         action['context'] = {
             'default_name': self.tag_name,
             'default_ticket_ids': [(6, 0, self.ids)]
